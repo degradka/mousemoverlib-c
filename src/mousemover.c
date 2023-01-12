@@ -9,7 +9,7 @@ void moveMouseTo(int monitorNum, int x, int y) {
     Display *dpy;
     dpy = XOpenDisplay(NULL);
 
-    if(dpy == NULL) {
+    if (dpy == NULL) {
         printf("Cannot open display\n");
         return;
     }
@@ -28,6 +28,37 @@ void moveMouseTo(int monitorNum, int x, int y) {
     }
 
     XWarpPointer(dpy, None, RootWindow(dpy, DefaultScreen(dpy)), 0, 0, 0, 0, screens[monitorNum].x_org + x, screens[monitorNum].y_org + y);
+
+    XFlush(dpy);
+    XCloseDisplay(dpy);
+    XFree(screens);
+}
+
+void clickMouse(int monitorNum, int buttonNum) {
+    Display *dpy;
+    dpy = XOpenDisplay(NULL);
+
+    if (dpy == NULL) {
+        printf("Cannot open display\n");
+        return;
+    }
+
+    int event_base, error_base;
+    if (!XineramaQueryExtension(dpy, &event_base, &error_base)) {
+        printf("Error: Xinerama extension not available\n");
+        return;
+    }
+
+    int numScreens;
+    XineramaScreenInfo *screens = XineramaQueryScreens(dpy, &numScreens);
+    if (monitorNum < 0 || monitorNum >= numScreens) {
+        printf("Error: Invalid monitor number\n");
+        return;
+    }
+
+    XTestFakeButtonEvent(dpy, buttonNum, 1, CurrentTime);
+    XTestFakeButtonEvent(dpy, buttonNum, 0, CurrentTime);
+
     XFlush(dpy);
     XCloseDisplay(dpy);
     XFree(screens);
