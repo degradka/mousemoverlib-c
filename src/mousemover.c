@@ -34,7 +34,7 @@ void moveMouseTo(int monitorNum, int x, int y) {
     XFree(screens);
 }
 
-void clickMouse(int monitorNum, int buttonNum) {
+void clickMouse(int monitorNum, int buttonNum, float clickDelay) {
     Display *dpy;
     dpy = XOpenDisplay(NULL);
 
@@ -56,8 +56,12 @@ void clickMouse(int monitorNum, int buttonNum) {
         return;
     }
 
-    XTestFakeButtonEvent(dpy, buttonNum, 1, CurrentTime);
-    XTestFakeButtonEvent(dpy, buttonNum, 0, CurrentTime);
+    if (clickDelay <= 0) {
+        clickDelay = CurrentTime;
+    }
+
+    XTestFakeButtonEvent(dpy, buttonNum, 1, clickDelay);
+    XTestFakeButtonEvent(dpy, buttonNum, 0, clickDelay);
 
     XFlush(dpy);
     XCloseDisplay(dpy);
