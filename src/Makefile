@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -Wall -Wextra -Werror -std=c99 -O3
+CFLAGS = -Wall -Wextra -std=c99 -O3
 INCLUDE = -I./
 
 MOUSEMOVER_INSTALL_PATH ?= /usr/local/lib
