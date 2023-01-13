@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
+#include <string.h>
 
 static void errorandbail(char *format, ...) {
     va_list list;
@@ -14,56 +15,55 @@ static void errorandbail(char *format, ...) {
     exit(1);
 }
 
-void moveMouseTo(int monitorNum, int x, int y) {
-    Display *dpy;
-    dpy = XOpenDisplay(NULL);
-
+static Display *opendisplay(void) {
+    Display *dpy = XOpenDisplay(NULL);
     if (dpy == NULL) {
-        errorandbail("Cannot open display\n");
-        return;
+        errorandbail("ERROR: Cannot open display\n");
+        return NULL;
+    }
+    return dpy;
+}
+
+struct XineramaExtension {
+    int eventbase;
+    int errorbase;
+    int monitornum;
+    int numscreens;
+    XineramaScreenInfo *screens;
+};
+
+static struct XineramaExtension *queryxinerama(Display *dpy, int monitornum) {
+    struct XineramaExtension *ext = malloc(sizeof(struct XineramaExtension));
+    ext->monitornum = monitornum;
+
+    if (!XineramaQueryExtension(dpy, &ext->eventbase, &ext->eventbase)) {
+        errorandbail("ERROR: Xinerama extension not available\n");
+        return NULL;
     }
 
-    int event_base, error_base;
-    if (!XineramaQueryExtension(dpy, &event_base, &error_base)) {
-        errorandbail("Error: Xinerama extension not available\n");
-        return;
+    ext->screens = XineramaQueryScreens(dpy, &ext->numscreens);
+    if (monitornum < 0 || monitornum >= ext->numscreens) {
+        errorandbail("ERROR: Invalid monitor number\n");
+        return NULL;
     }
+    return ext;
+}
 
-    int numScreens;
-    XineramaScreenInfo *screens = XineramaQueryScreens(dpy, &numScreens);
-    if (monitorNum < 0 || monitorNum >= numScreens) {
-        errorandbail("Error: Invalid monitor number\n");
-        return;
-    }
+void moveMouseTo(int monitorNum, int x, int y) {
+    Display *dpy = opendisplay();
+    struct XineramaExtension *xineext = queryxinerama(dpy, monitorNum);
 
-    XWarpPointer(dpy, None, RootWindow(dpy, DefaultScreen(dpy)), 0, 0, 0, 0, screens[monitorNum].x_org + x, screens[monitorNum].y_org + y);
+    XWarpPointer(dpy, None, RootWindow(dpy, DefaultScreen(dpy)), 0, 0, 0, 0, xineext->screens[monitorNum].x_org + x, xineext->screens[monitorNum].y_org + y);
 
     XFlush(dpy);
     XCloseDisplay(dpy);
-    XFree(screens);
+    XFree(xineext->screens);
+    free(xineext);
 }
 
 void clickMouse(int monitorNum, int buttonNum, float clickDelay) {
-    Display *dpy;
-    dpy = XOpenDisplay(NULL);
-
-    if (dpy == NULL) {
-        errorandbail("Cannot open display\n");
-        return;
-    }
-
-    int event_base, error_base;
-    if (!XineramaQueryExtension(dpy, &event_base, &error_base)) {
-        errorandbail("Error: Xinerama extension not available\n");
-        return;
-    }
-
-    int numScreens;
-    XineramaScreenInfo *screens = XineramaQueryScreens(dpy, &numScreens);
-    if (monitorNum < 0 || monitorNum >= numScreens) {
-        errorandbail("Error: Invalid monitor number\n");
-        return;
-    }
+    Display *dpy = opendisplay();
+    struct XineramaExtension *xineext = queryxinerama(dpy, monitorNum);
 
     if (clickDelay <= 0) {
         clickDelay = CurrentTime;
@@ -75,5 +75,6 @@ void clickMouse(int monitorNum, int buttonNum, float clickDelay) {
     XFlush(dpy);
 
     XCloseDisplay(dpy);
-    XFree(screens);
+    XFree(xineext->screens);
+    free(xineext);
 }
