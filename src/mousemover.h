@@ -1,6 +1,10 @@
 #ifndef MOUSEMOVER_H
 #define MOUSEMOVER_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * @brief Move the mouse cursor into the specified position on a specified monitor.
  * 
@@ -18,5 +22,9 @@ void moveMouseTo(int monitorNum, int x, int y);
  * @param clickDelay Delay between the current click and the next click
  */
 void clickMouse(int monitorNum, int buttonNum, float clickDelay);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
