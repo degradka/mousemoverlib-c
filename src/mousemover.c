@@ -61,9 +61,10 @@ void clickMouse(int monitorNum, int buttonNum, float clickDelay) {
     }
 
     XTestFakeButtonEvent(dpy, buttonNum, 1, clickDelay);
-    XTestFakeButtonEvent(dpy, buttonNum, 0, clickDelay);
-
     XFlush(dpy);
+    XTestFakeButtonEvent(dpy, buttonNum, 0, clickDelay);
+    XFlush(dpy);
+
     XCloseDisplay(dpy);
     XFree(screens);
 }
