@@ -5,6 +5,12 @@
 extern "C" {
 #endif
 
+#define LMB 1
+#define MMB 2
+#define RMB 3
+#define MWU 4
+#define MWD 5
+
 /**
  * @brief Move the mouse cursor into the specified position on a specified monitor.
  * 
