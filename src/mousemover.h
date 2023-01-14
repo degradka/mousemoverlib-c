@@ -5,11 +5,13 @@
 extern "C" {
 #endif
 
-#define LMB 1
-#define MMB 2
-#define RMB 3
-#define MWU 4
-#define MWD 5
+enum {
+    LMB = 1, // Left Mouse Button
+    MMB,     // Middle Mouse Button
+    RMB,     // Right Mouse Button
+    MWU,     // Mouse Wheel Up 
+    MWD,     // Mouse Wheel Down
+};
 
 /**
  * @brief Move the mouse cursor into the specified position on a specified monitor.
@@ -25,7 +27,7 @@ void moveMouseTo(int monitorNum, int x, int y);
  * 
  * @param buttonNum The mouse button
  * @param clickDelay Delay in ms before the click
- * @param buttonHoldTime Time in ms the button will be pressed after the click
+ * @param buttonHoldTime Time in ms the button will be held after the click
  */
 void clickMouseButton(int buttonNum, float clickDelay, float buttonHoldTime);
 
@@ -37,7 +39,7 @@ void clickMouseButton(int buttonNum, float clickDelay, float buttonHoldTime);
  * @param y Y position
  * @param buttonNum The mouse button
  * @param clickDelay Delay in ms before the click
- * @param buttonHoldTime Time in ms the button will be pressed after the click
+ * @param buttonHoldTime Time in ms the button will be held after the click
  */
 void clickMouseButtonAt(int monitorNum, int x, int y, int buttonNum, float clickDelay, float buttonHoldTime);
 
@@ -47,7 +49,7 @@ void clickMouseButtonAt(int monitorNum, int x, int y, int buttonNum, float click
  * @param buttonNum The mouse button
  * @param firstClickDelay Delay in ms before the first click
  * @param secondClickDelay Delay in ms before the second click
- * @param buttonHoldTime Time in ms each button will be pressed after the click
+ * @param buttonHoldTime Time in ms each button will be held after the click
  */
 void doubleClickMouseButton(int buttonNum, float firstClickDelay, float secondClickDelay, float buttonHoldTime);
 
