@@ -6,6 +6,8 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <string.h>
+#include <time.h>
+#include <unistd.h>
 
 static void errorandbail(char *format, ...) {
     va_list list;
@@ -94,6 +96,7 @@ void clickMouseButtonAt(int monitorNum, int x, int y, int buttonNum, float click
 
     XWarpPointer(dpy, None, RootWindow(dpy, DefaultScreen(dpy)), 0, 0, 0, 0, xineext->screens[monitorNum].x_org + x, xineext->screens[monitorNum].y_org + y);
     XFlush(dpy);
+
     XTestFakeButtonEvent(dpy, buttonNum, 1, clickDelay);
     XFlush(dpy);
     XTestFakeButtonEvent(dpy, buttonNum, 0, buttonHoldTime);
@@ -130,6 +133,40 @@ void doubleClickMouseButton(int buttonNum, float firstClickDelay, float secondCl
     XFlush(dpy);
 
     XCloseDisplay(dpy);
+}
+
+void doubleClickMouseButtonAt(int monitorNum, int x, int y, int buttonNum, float firstClickDelay, float secondClickDelay, float buttonHoldTime) {
+    Display *dpy = opendisplay();
+    struct XineramaExtension *xineext = queryxinerama(dpy, monitorNum);
+
+    if (firstClickDelay <= 0) {
+        firstClickDelay = CurrentTime;
+    }
+
+    if (secondClickDelay <= 0) {
+        secondClickDelay = CurrentTime;
+    }
+
+    if (buttonHoldTime <= 0) {
+        buttonHoldTime = CurrentTime;
+    }
+
+    XWarpPointer(dpy, None, RootWindow(dpy, DefaultScreen(dpy)), 0, 0, 0, 0, xineext->screens[monitorNum].x_org + x, xineext->screens[monitorNum].y_org + y);
+    XFlush(dpy);
+
+    XTestFakeButtonEvent(dpy, buttonNum, 1, firstClickDelay);
+    XFlush(dpy);
+    XTestFakeButtonEvent(dpy, buttonNum, 0, buttonHoldTime);
+    XFlush(dpy);
+
+    XTestFakeButtonEvent(dpy, buttonNum, 1, secondClickDelay);
+    XFlush(dpy);
+    XTestFakeButtonEvent(dpy, buttonNum, 0, buttonHoldTime);
+    XFlush(dpy);
+
+    XCloseDisplay(dpy);
+    XFree(xineext->screens);
+    free(xineext);
 }
 
 int getScreenWidth(int monitorNum) {
