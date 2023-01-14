@@ -65,6 +65,10 @@ void clickMouse(int monitorNum, int buttonNum, float clickDelay) {
     Display *dpy = opendisplay();
     struct XineramaExtension *xineext = queryxinerama(dpy, monitorNum);
 
+    if (buttonNum < 1 || buttonNum > 5) {
+        errorandbail("ERROR: Invalid button number\n");
+    }
+
     if (clickDelay <= 0) {
         clickDelay = CurrentTime;
     }
