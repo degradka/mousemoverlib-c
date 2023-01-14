@@ -51,7 +51,7 @@ static struct XineramaExtension *queryxinerama(Display *dpy, int monitornum) {
     return ext;
 }
 
-void moveMouseTo(int monitorNum, int x, int y) {
+void moveMouseTo(int monitorNum, int x, int y, float duration) {
     Display *dpy = opendisplay();
     struct XineramaExtension *xineext = queryxinerama(dpy, monitorNum);
 
