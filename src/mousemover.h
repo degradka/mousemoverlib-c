@@ -5,13 +5,11 @@
 extern "C" {
 #endif
 
-enum {
-    LMB = 1, // Left Mouse Button
-    MMB,     // Middle Mouse Button
-    RMB,     // Right Mouse Button
-    MWU,     // Mouse Wheel Up 
-    MWD,     // Mouse Wheel Down
-};
+#define LMB 1
+#define MMB 2
+#define RMB 3
+#define MWU 4
+#define MWD 5
 
 /**
  * @brief Move the mouse cursor into the specified position on a specified monitor.
@@ -20,26 +18,26 @@ enum {
  * @param x X position
  * @param y Y position
  */
-void moveMouseTo(int monitorNum, int x, int y);
+void moveMouseTo(int monitorNum, int x, int y, float duration);
 
 /**
  * @brief Trigger a mouse button click.
  * 
  * @param buttonNum The mouse button
  * @param clickDelay Delay in ms before the click
- * @param buttonHoldTime Time in ms the button will be held after the click
+ * @param buttonHoldTime Time in ms the button will be pressed after the click
  */
 void clickMouseButton(int buttonNum, float clickDelay, float buttonHoldTime);
 
 /**
- * @brief Trigger a mouse button click.
+ * @brief Trigger a mouse button click at some position.
  *
  * @param monitorNum The number of your monitor
  * @param x X position
  * @param y Y position
  * @param buttonNum The mouse button
  * @param clickDelay Delay in ms before the click
- * @param buttonHoldTime Time in ms the button will be held after the click
+ * @param buttonHoldTime Time in ms the button will be pressed after the click
  */
 void clickMouseButtonAt(int monitorNum, int x, int y, int buttonNum, float clickDelay, float buttonHoldTime);
 
@@ -49,9 +47,22 @@ void clickMouseButtonAt(int monitorNum, int x, int y, int buttonNum, float click
  * @param buttonNum The mouse button
  * @param firstClickDelay Delay in ms before the first click
  * @param secondClickDelay Delay in ms before the second click
- * @param buttonHoldTime Time in ms each button will be held after the click
+ * @param buttonHoldTime Time in ms each button will be pressed after the click
  */
 void doubleClickMouseButton(int buttonNum, float firstClickDelay, float secondClickDelay, float buttonHoldTime);
+
+/**
+ * @brief Trigger a mouse button double-click at some position.
+ *
+ * @param monitorNum The number of your monitor
+ * @param x X position
+ * @param y Y position
+ * @param buttonNum The mouse button
+ * @param firstClickDelay Delay in ms before the first click
+ * @param secondClickDelay Delay in ms before the second click
+ * @param buttonHoldTime Time in ms each button will be pressed after the click
+ */
+void doubleClickMouseButtonAt(int monitorNum, int x, int y, int buttonNum, float firstClickDelay, float secondClickDelay, float buttonHoldTime);
 
 /**
  * @brief Get screen width of a specified monitor.
