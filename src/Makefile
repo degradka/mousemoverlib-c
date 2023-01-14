@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -Wall -Wextra -std=c99 -O3
+CFLAGS = -Wall -Wextra -std=gnu99 -O3
 LDFLAGS = -lX11 -lXtst -lXinerama
 INCLUDE = -I./
 
