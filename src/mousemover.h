@@ -12,22 +12,7 @@ enum {
     MWU,     // Mouse Wheel Up 
     MWD,     // Mouse Wheel Down
 };
-/*
-// Left Mouse Button
-#define LMB 1
 
-// Middle Mouse Button
-#define MMB 2
-
-// Right Mouse Button
-#define RMB 3
-
-// Mouse Wheel Up
-#define MWU 4
-
-// Mouse Wheel Down
-#define MWD 5
-*/
 /**
  * @brief Move the mouse cursor into the specified position on a specified monitor.
  * 
