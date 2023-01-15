@@ -8,6 +8,7 @@
 #include <string.h>
 #include <time.h>
 #include <unistd.h>
+#include <math.h>
 
 static void errorandbail(char *format, ...) {
     va_list list;
@@ -51,55 +52,11 @@ static struct XineramaExtension *queryxinerama(Display *dpy, int monitornum) {
     return ext;
 }
 
-void moveMouseTo(int monitorNum, int x, int y, float duration) {
+void moveMouseTo(int monitorNum, int x, int y) {
     Display *dpy = opendisplay();
     struct XineramaExtension *xineext = queryxinerama(dpy, monitorNum);
 
     XWarpPointer(dpy, None, RootWindow(dpy, DefaultScreen(dpy)), 0, 0, 0, 0, xineext->screens[monitorNum].x_org + x, xineext->screens[monitorNum].y_org + y);
-
-    XFlush(dpy);
-    XCloseDisplay(dpy);
-    XFree(xineext->screens);
-    free(xineext);
-}
-
-void clickMouseButton(int buttonNum, float clickDelay, float buttonHoldTime) {
-    Display *dpy = opendisplay();
-
-    if (clickDelay <= 0) {
-        clickDelay = CurrentTime;
-    }
-
-    if (buttonHoldTime <= 0) {
-        buttonHoldTime = CurrentTime;
-    }
-
-    XTestFakeButtonEvent(dpy, buttonNum, 1, clickDelay);
-    XFlush(dpy);
-    XTestFakeButtonEvent(dpy, buttonNum, 0, buttonHoldTime);
-    XFlush(dpy);
-
-    XCloseDisplay(dpy);
-}
-
-void clickMouseButtonAt(int monitorNum, int x, int y, int buttonNum, float clickDelay, float buttonHoldTime) {
-    Display *dpy = opendisplay();
-    struct XineramaExtension *xineext = queryxinerama(dpy, monitorNum);
-
-    if (clickDelay <= 0) {
-        clickDelay = CurrentTime;
-    }
-
-    if (buttonHoldTime <= 0) {
-        buttonHoldTime = CurrentTime;
-    }
-
-    XWarpPointer(dpy, None, RootWindow(dpy, DefaultScreen(dpy)), 0, 0, 0, 0, xineext->screens[monitorNum].x_org + x, xineext->screens[monitorNum].y_org + y);
-    XFlush(dpy);
-
-    XTestFakeButtonEvent(dpy, buttonNum, 1, clickDelay);
-    XFlush(dpy);
-    XTestFakeButtonEvent(dpy, buttonNum, 0, buttonHoldTime);
     XFlush(dpy);
 
     XCloseDisplay(dpy);
@@ -107,66 +64,214 @@ void clickMouseButtonAt(int monitorNum, int x, int y, int buttonNum, float click
     free(xineext);
 }
 
-void doubleClickMouseButton(int buttonNum, float firstClickDelay, float secondClickDelay, float buttonHoldTime) {
+void moveMouseRel(int x, int y) {
     Display *dpy = opendisplay();
 
-    if (firstClickDelay <= 0) {
-        firstClickDelay = CurrentTime;
-    }
+    Window root_window;
+    int root_x, root_y;
+    int win_x, win_y;
+    unsigned int mask;
+    XQueryPointer(dpy, DefaultRootWindow(dpy), &root_window, &root_window, &root_x, &root_y, &win_x, &win_y, &mask);
 
-    if (secondClickDelay <= 0) {
-        secondClickDelay = CurrentTime;
-    }
-
-    if (buttonHoldTime <= 0) {
-        buttonHoldTime = CurrentTime;
-    }
-
-    XTestFakeButtonEvent(dpy, buttonNum, 1, firstClickDelay);
-    XFlush(dpy);
-    XTestFakeButtonEvent(dpy, buttonNum, 0, buttonHoldTime);
-    XFlush(dpy);
-
-    XTestFakeButtonEvent(dpy, buttonNum, 1, secondClickDelay);
-    XFlush(dpy);
-    XTestFakeButtonEvent(dpy, buttonNum, 0, buttonHoldTime);
+    XWarpPointer(dpy, None, DefaultRootWindow(dpy), 0, 0, 0, 0, root_x + x, root_y + y);
     XFlush(dpy);
 
     XCloseDisplay(dpy);
 }
 
-void doubleClickMouseButtonAt(int monitorNum, int x, int y, int buttonNum, float firstClickDelay, float secondClickDelay, float buttonHoldTime) {
+void dragMouseTo(int monitorNum, int x, int y, int buttonNum) {
     Display *dpy = opendisplay();
     struct XineramaExtension *xineext = queryxinerama(dpy, monitorNum);
 
-    if (firstClickDelay <= 0) {
-        firstClickDelay = CurrentTime;
+    if (buttonNum < 1 || buttonNum > 3) {
+        errorandbail("ERROR: Invalid button\n");
     }
 
-    if (secondClickDelay <= 0) {
-        secondClickDelay = CurrentTime;
-    }
-
-    if (buttonHoldTime <= 0) {
-        buttonHoldTime = CurrentTime;
-    }
-
+    XTestFakeButtonEvent(dpy, buttonNum, 1, CurrentTime);
+    XFlush(dpy);
     XWarpPointer(dpy, None, RootWindow(dpy, DefaultScreen(dpy)), 0, 0, 0, 0, xineext->screens[monitorNum].x_org + x, xineext->screens[monitorNum].y_org + y);
     XFlush(dpy);
-
-    XTestFakeButtonEvent(dpy, buttonNum, 1, firstClickDelay);
-    XFlush(dpy);
-    XTestFakeButtonEvent(dpy, buttonNum, 0, buttonHoldTime);
-    XFlush(dpy);
-
-    XTestFakeButtonEvent(dpy, buttonNum, 1, secondClickDelay);
-    XFlush(dpy);
-    XTestFakeButtonEvent(dpy, buttonNum, 0, buttonHoldTime);
+    XTestFakeButtonEvent(dpy, buttonNum, 0, CurrentTime);
     XFlush(dpy);
 
     XCloseDisplay(dpy);
     XFree(xineext->screens);
     free(xineext);
+}
+
+void dragMouseRel(int x, int y, int buttonNum) {
+    Display *dpy = opendisplay();
+
+    if (buttonNum < 1 || buttonNum > 3) {
+        errorandbail("ERROR: Invalid button\n");
+    }
+
+    Window root_window;
+    int root_x, root_y;
+    int win_x, win_y;
+    unsigned int mask;
+    XQueryPointer(dpy, DefaultRootWindow(dpy), &root_window, &root_window, &root_x, &root_y, &win_x, &win_y, &mask);
+
+    XTestFakeButtonEvent(dpy, buttonNum, 1, CurrentTime);
+    XFlush(dpy);
+    XWarpPointer(dpy, None, DefaultRootWindow(dpy), 0, 0, 0, 0, root_x + x, root_y + y);
+    XFlush(dpy);
+    XTestFakeButtonEvent(dpy, buttonNum, 0, CurrentTime);
+    XFlush(dpy);
+
+    XCloseDisplay(dpy);
+}
+
+void clickMouseButton(int buttonNum, float timeButtonHeld) {
+    Display *dpy = opendisplay();
+
+    if (buttonNum < 1 || buttonNum > 3) {
+        errorandbail("ERROR: Invalid button\n");
+    }
+
+    if (timeButtonHeld <= 0) {
+        timeButtonHeld = CurrentTime;
+    }
+
+    XTestFakeButtonEvent(dpy, buttonNum, 1, CurrentTime);
+    XFlush(dpy);
+    XTestFakeButtonEvent(dpy, buttonNum, 0, timeButtonHeld);
+    XFlush(dpy);
+
+    XCloseDisplay(dpy);
+}
+
+void clickMouseButtonAt(int monitorNum, int x, int y, int buttonNum, float timeButtonHeld) {
+    Display *dpy = opendisplay();
+    struct XineramaExtension *xineext = queryxinerama(dpy, monitorNum);
+
+    if (buttonNum < 1 || buttonNum > 3) {
+        errorandbail("ERROR: Invalid button\n");
+    }
+
+    if (timeButtonHeld <= 0) {
+        timeButtonHeld = CurrentTime;
+    }
+
+    XWarpPointer(dpy, None, RootWindow(dpy, DefaultScreen(dpy)), 0, 0, 0, 0, xineext->screens[monitorNum].x_org + x, xineext->screens[monitorNum].y_org + y);
+    XFlush(dpy);
+
+    XTestFakeButtonEvent(dpy, buttonNum, 1, CurrentTime);
+    XFlush(dpy);
+    XTestFakeButtonEvent(dpy, buttonNum, 0, timeButtonHeld);
+    XFlush(dpy);
+
+    XCloseDisplay(dpy);
+    XFree(xineext->screens);
+    free(xineext);
+}
+
+void doubleClickMouseButton(int buttonNum, float timeButtonHeld) {
+    Display *dpy = opendisplay();
+
+    if (buttonNum < 1 || buttonNum > 3) {
+        errorandbail("ERROR: Invalid button\n");
+    }
+
+    if (timeButtonHeld <= 0) {
+        timeButtonHeld = CurrentTime;
+    }
+
+    XTestFakeButtonEvent(dpy, buttonNum, 1, CurrentTime);
+    XFlush(dpy);
+    XTestFakeButtonEvent(dpy, buttonNum, 0, timeButtonHeld);
+    XFlush(dpy);
+
+    XTestFakeButtonEvent(dpy, buttonNum, 1, timeButtonHeld);
+    XFlush(dpy);
+    XTestFakeButtonEvent(dpy, buttonNum, 0, timeButtonHeld);
+    XFlush(dpy);
+
+    XCloseDisplay(dpy);
+}
+
+void doubleClickMouseButtonAt(int monitorNum, int x, int y, int buttonNum, float timeButtonHeld) {
+    Display *dpy = opendisplay();
+    struct XineramaExtension *xineext = queryxinerama(dpy, monitorNum);
+
+    if (buttonNum < 1 || buttonNum > 3) {
+        errorandbail("ERROR: Invalid button\n");
+    }
+
+    if (timeButtonHeld <= 0) {
+        timeButtonHeld = CurrentTime;
+    }
+
+    XWarpPointer(dpy, None, RootWindow(dpy, DefaultScreen(dpy)), 0, 0, 0, 0, xineext->screens[monitorNum].x_org + x, xineext->screens[monitorNum].y_org + y);
+    XFlush(dpy);
+
+    XTestFakeButtonEvent(dpy, buttonNum, 1, CurrentTime);
+    XFlush(dpy);
+    XTestFakeButtonEvent(dpy, buttonNum, 0, timeButtonHeld);
+    XFlush(dpy);
+
+    XTestFakeButtonEvent(dpy, buttonNum, 1, timeButtonHeld);
+    XFlush(dpy);
+    XTestFakeButtonEvent(dpy, buttonNum, 0, timeButtonHeld);
+    XFlush(dpy);
+
+    XCloseDisplay(dpy);
+    XFree(xineext->screens);
+    free(xineext);
+}
+
+void downMouseButton(int buttonNum, float delayBeforeAction) {
+    Display *dpy = opendisplay();
+
+    if (buttonNum < 1 || buttonNum > 3) {
+        errorandbail("ERROR: Invalid button\n");
+    }
+
+    if (delayBeforeAction <= 0) {
+        delayBeforeAction = CurrentTime;
+    }
+
+    XTestFakeButtonEvent(dpy, buttonNum, 1, delayBeforeAction);
+    XFlush(dpy);
+
+    XCloseDisplay(dpy);
+}
+
+void upMouseButton(int buttonNum, float delayBeforeAction) {
+    Display *dpy = opendisplay();
+
+    if (buttonNum < 1 || buttonNum > 3) {
+        errorandbail("ERROR: Invalid button\n");
+    }
+
+    if (delayBeforeAction <= 0) {
+        delayBeforeAction = CurrentTime;
+    }
+
+    XTestFakeButtonEvent(dpy, buttonNum, 0, delayBeforeAction);
+    XFlush(dpy);
+
+    XCloseDisplay(dpy);
+}
+
+void scrollMouse(int axis, int timesToScroll) {
+    Display *dpy = opendisplay();
+
+    if (axis < 4 || axis > 7) {
+        errorandbail("ERROR: Invalid axis\n");
+    }
+
+    if (timesToScroll < 0) {
+        timesToScroll = 0;
+    }
+
+    for (int i = 0; i < timesToScroll; i++) {
+        XTestFakeButtonEvent(dpy, axis, 1, CurrentTime);
+        XTestFakeButtonEvent(dpy, axis, 0, CurrentTime);
+    }
+
+    XFlush(dpy);
+    XCloseDisplay(dpy);
 }
 
 int getScreenWidth(int monitorNum) {
