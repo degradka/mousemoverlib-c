@@ -19,3 +19,10 @@ sudo make clean\
 sudo make uninstall\
 sudo make\
 sudo make install
+
+# todo
+add keyboard commands:\
+typewriteKeyboard\
+tapKeyboardKey\
+downKeyboardKey\
+upKeyboardKey
