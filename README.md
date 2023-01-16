@@ -1,4 +1,4 @@
-# mousemovelib-c
+# mousemoverlib-c
 required packages and libraries:\
 debian: `sudo apt-get install libx11-dev libxtst-dev libxinerama-dev`\
 fedora/red hat: `sudo dnf install libX11-devel libXtst-devel libXinerama-devel`
